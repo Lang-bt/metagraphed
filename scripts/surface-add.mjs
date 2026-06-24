@@ -11,6 +11,8 @@
 //     --provider <provider-slug> --submitted-by <github-login> --write
 import path from "node:path";
 import {
+  isJsonContentType,
+  isUnsafeResolvedUrl,
   listJsonFiles,
   loadNativeSnapshot,
   loadProviders,
@@ -18,6 +20,7 @@ import {
   readJson,
   registrySurfaceKey,
   repoRoot,
+  safeFetch,
   slugify,
   stableStringify,
   writeRepositoryJson,
@@ -26,6 +29,10 @@ import { normalizeGitHubLogin } from "./submission-policy.mjs";
 
 const args = process.argv.slice(2);
 const write = args.includes("--write");
+// Live verification is ON by default — it probes the real URLs so a contributor
+// finds out NOW (not after a closed PR) that a surface is dead/private, and it
+// fills openapi schema fields from the live spec. --skip-verify for offline work.
+const skipVerify = args.includes("--skip-verify");
 const netuid = Number(valueAfter("--netuid"));
 const kind = valueAfter("--kind");
 const url = normalizePublicUrl(valueAfter("--url"));
@@ -97,6 +104,10 @@ const surface = {
   ...(notes ? { notes } : {}),
 };
 
+const findings = skipVerify
+  ? ["skipped (--skip-verify)"]
+  : await verifyAndEnrich(surface);
+
 document.surfaces = [...surfaces, surface];
 
 if (write) {
@@ -108,10 +119,123 @@ console.log(
     mode: write ? "write" : "dry-run",
     subnet_file: path.relative(repoRoot, filePath),
     surface_count: document.surfaces.length,
+    verification: findings,
     surface,
     next: "Link a tracked issue (Closes #N) and open a PR that changes ONLY this file.",
   }),
 );
+
+// Live verification with real information: hard-fail on a private/unsafe URL (so
+// public_safe:true is never a lie), warn on anything not reachable right now, and
+// for openapi auto-discover the spec → set schema_url/schema_status + name from
+// the live title (closing the gap where a hand-added openapi surface had no schema
+// fields and failed CI). Network-dependent; --skip-verify bypasses it offline.
+async function verifyAndEnrich(target) {
+  const checks = [
+    ["url", target.url],
+    ...target.source_urls.map((value) => ["source_url", value]),
+  ];
+  for (const [label, value] of checks) {
+    if (await isUnsafeResolvedUrl(value)) {
+      fail(
+        `${label} resolves to a private/unsafe address and cannot be a public surface: ${value}`,
+      );
+    }
+  }
+  const out = [];
+  const urlProbe = await probeUrl(target.url);
+  if (!urlProbe.ok) {
+    out.push(
+      `WARN url not reachable right now (${urlProbe.detail}) — confirm it is public + live before merging.`,
+    );
+  }
+  for (const value of target.source_urls) {
+    const probe = await probeUrl(value);
+    if (!probe.ok) {
+      out.push(
+        `WARN source_url not reachable right now (${probe.detail}): ${value} — it must independently prove the claim.`,
+      );
+    }
+  }
+  if (target.kind === "openapi") {
+    const spec = await fetchOpenApi(target.url);
+    if (spec) {
+      target.schema_url = spec.schemaUrl;
+      target.schema_status = "machine-readable";
+      if (!name && spec.document.info?.title) {
+        target.name = `${subnet.name} ${spec.document.info.title}`;
+      }
+      const paths = spec.document.paths
+        ? Object.keys(spec.document.paths).length
+        : 0;
+      out.push(
+        `OK openapi spec verified (${spec.document.info?.title || "untitled"}, ${paths} paths) → schema_url + schema_status set.`,
+      );
+    } else {
+      out.push(
+        `WARN openapi: no machine-readable OpenAPI/Swagger JSON found at ${target.url}. CI's full validate REQUIRES schema_status:"machine-readable" — point --url at the spec (e.g. .../openapi.json) or use a different --kind.`,
+      );
+    }
+  }
+  if (out.length === 0) out.push("OK reachable + public-safe.");
+  return out;
+}
+
+async function probeUrl(target) {
+  // safeFetch re-checks every redirect hop, so a public host can't redirect into
+  // a private address to defeat the public-safe guard.
+  const result = await safeFetch(target, { accept: "*/*" });
+  if (result.unsafe) {
+    return { ok: false, detail: "redirects to a private/unsafe address" };
+  }
+  if (result.error) return { ok: false, detail: result.error };
+  await result.response?.body?.cancel();
+  return result.ok
+    ? { ok: true }
+    : { ok: false, detail: `HTTP ${result.status}` };
+}
+
+async function fetchOpenApi(target) {
+  const candidates = [target];
+  try {
+    const parsed = new URL(target);
+    for (const suffix of [
+      "/openapi.json",
+      "/swagger.json",
+      "/api-json",
+      "/docs-json",
+    ]) {
+      candidates.push(`${parsed.origin}${suffix}`);
+    }
+  } catch {
+    // invalid URL — validation elsewhere reports it
+  }
+  for (const candidate of [...new Set(candidates)]) {
+    const result = await safeFetch(candidate, { accept: "application/json" });
+    if (
+      !result.ok ||
+      !result.response ||
+      !isJsonContentType(result.response.headers.get("content-type"))
+    ) {
+      await result.response?.body?.cancel();
+      continue;
+    }
+    try {
+      const document = JSON.parse(await result.response.text());
+      const looksOpenApi =
+        document &&
+        typeof document === "object" &&
+        (typeof document.openapi === "string" ||
+          typeof document.swagger === "string" ||
+          Boolean(document.paths));
+      // result.url is the final URL after safe redirects — the real spec location.
+      if (looksOpenApi) return { document, schemaUrl: result.url };
+    } catch {
+      // not JSON / not a spec — try the next candidate
+    }
+  }
+  return null;
+}
 
 async function resolveSubnetFile(targetNetuid) {
   const files = await listJsonFiles(path.join(repoRoot, "registry/subnets"));
