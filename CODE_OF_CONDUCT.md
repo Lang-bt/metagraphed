@@ -22,7 +22,10 @@ Examples of unacceptable behavior include:
 - Trolling, insulting or derogatory comments, and personal or political attacks
 - Public or private harassment
 - Publishing others' private information, such as a physical or email address, without their explicit permission
+- Plagiarism — copying another contributor's pull request, diff, or work and submitting it as your own (including duplicated or lightly reworded copies filed under a different account), and attempts to game contribution scoring or farm Gittensor rewards through copied submissions
 - Other conduct which could reasonably be considered inappropriate in a professional setting
+
+> **Enforcement is proportional and escalates with intent and repetition.** Off-scope or low-effort work is closed or relabeled, with no further penalty. Reward-farming — manufacturing low-value or slop issues to harvest contribution credit, scattershot or bulk low-value submissions, or PRs filed for points rather than product impact — earns a warning, and any linked issue is closed so the work earns no bonus credit; continuing after a warning, or coordinating multiple accounts to farm (for example, one account opening issues for another to harvest), results in submissions being closed and labeled on sight and a block from contributing. Plagiarism and ban-evasion — copying another contributor's work, or returning under a new account after a block — result in an immediate **permanent block from contributing across all of our repositories** (`JSONbored/gittensory`, `JSONbored/metagraphed`, `JSONbored/awesome-claude`).
 
 ## Enforcement Responsibilities
 
