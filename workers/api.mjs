@@ -1324,13 +1324,40 @@ function isMainnetOnlyApiPath(pathname) {
     pathname === "/api/v1/search/semantic" ||
     pathname === "/api/v1/registry/leaderboards" ||
     pathname === "/api/v1/compare" ||
+    pathname === "/api/v1/health" ||
+    pathname === "/api/v1/incidents" ||
+    pathname === "/api/v1/rpc/usage" ||
+    pathname === "/api/v1/chain/activity" ||
+    pathname === "/api/v1/chain/calls" ||
+    pathname === "/api/v1/chain/signers" ||
+    pathname === "/api/v1/chain/fees" ||
     pathname.startsWith("/api/v1/webhooks/") ||
     BULK_TRENDS_PATH_PATTERN.test(pathname) ||
     TRENDS_PATH_PATTERN.test(pathname) ||
     PERCENTILES_PATH_PATTERN.test(pathname) ||
     INCIDENTS_PATH_PATTERN.test(pathname) ||
     TRAJECTORY_PATH_PATTERN.test(pathname) ||
-    UPTIME_PATH_PATTERN.test(pathname)
+    UPTIME_PATH_PATTERN.test(pathname) ||
+    /^\/api\/v1\/subnets\/(\d+)\/health$/.test(pathname) ||
+    SUBNET_METAGRAPH_PATH_PATTERN.test(pathname) ||
+    SUBNET_NEURON_PATH_PATTERN.test(pathname) ||
+    SUBNET_NEURON_HISTORY_PATH_PATTERN.test(pathname) ||
+    SUBNET_VALIDATORS_PATH_PATTERN.test(pathname) ||
+    SUBNET_EVENTS_PATH_PATTERN.test(pathname) ||
+    SUBNET_HISTORY_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_EVENTS_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_HISTORY_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_SUBNETS_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_EXTRINSICS_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_TRANSFERS_PATH_PATTERN.test(pathname) ||
+    ACCOUNT_BALANCE_PATH_PATTERN.test(pathname) ||
+    BLOCKS_FEED_PATH_PATTERN.test(pathname) ||
+    BLOCK_DETAIL_PATH_PATTERN.test(pathname) ||
+    BLOCK_EXTRINSICS_PATH_PATTERN.test(pathname) ||
+    BLOCK_EVENTS_PATH_PATTERN.test(pathname) ||
+    EXTRINSICS_FEED_PATH_PATTERN.test(pathname) ||
+    EXTRINSIC_DETAIL_PATH_PATTERN.test(pathname)
   );
 }
 

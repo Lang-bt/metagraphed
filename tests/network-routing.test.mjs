@@ -6,6 +6,7 @@ import { createLocalArtifactEnv, repoRoot } from "../scripts/lib.mjs";
 import { buildNetworkRegistry } from "../scripts/build-network-registry.mjs";
 
 const ORIGIN = "https://api.metagraph.sh";
+const SS58 = "5G9hfkx9wGB1CLMT9WXkpHSAiYzjZb5o1Boyq4KAdDhjwrc5";
 
 // Build the testnet registry from the committed snapshot so the data-present
 // assertions don't depend on a prior `npm run build`. `local` is intentionally
@@ -304,6 +305,31 @@ describe("multi-network routing prefix (Phase 1)", () => {
     const compare = await get(env, "/api/v1/testnet/compare?netuids=1");
     assert.equal(compare.res.status, 404);
     assert.equal(compare.body.meta.network, "testnet");
+  });
+
+  test("D1-backed live routes 404 under testnet with a mainnet-only message", async () => {
+    const env = createLocalArtifactEnv();
+    for (const path of [
+      "/api/v1/testnet/blocks",
+      "/api/v1/testnet/blocks/12345",
+      "/api/v1/testnet/extrinsics",
+      `/api/v1/testnet/accounts/${SS58}`,
+      "/api/v1/testnet/subnets/7/metagraph",
+      "/api/v1/testnet/subnets/7/validators",
+      "/api/v1/testnet/subnets/7/events",
+      "/api/v1/testnet/subnets/7/health",
+      "/api/v1/testnet/incidents",
+      "/api/v1/testnet/rpc/usage",
+      "/api/v1/testnet/chain/activity",
+    ]) {
+      const { res, body } = await get(env, path);
+      assert.equal(res.status, 404, path);
+      assert.equal(body.meta.network, "testnet", path);
+      assert.match(body.error.message, /only available on mainnet/i, path);
+    }
+    // Partitioned registry routes stay available under testnet.
+    const subnets = await get(env, "/api/v1/testnet/subnets");
+    assert.equal(subnets.res.status, 200);
   });
 
   test("raw artifact: mainnet alias and testnet both serve their partitioned data", async () => {
