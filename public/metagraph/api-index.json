@@ -415,6 +415,13 @@
     },
     {
       "contract_version": "2026-06-06.1",
+      "id": "subnet-economics-history",
+      "path": "/metagraph/subnets/{netuid}/economics/history.json",
+      "schema_ref": "#/components/schemas/SubnetEconomicsHistoryArtifact",
+      "storage_tier": "r2"
+    },
+    {
+      "contract_version": "2026-06-06.1",
       "id": "account-summary",
       "path": "/metagraph/accounts/{ss58}.json",
       "schema_ref": "#/components/schemas/AccountSummaryArtifact",
@@ -4259,6 +4266,32 @@
       "id": "subnet-history",
       "method": "GET",
       "path": "/api/v1/subnets/{netuid}/history",
+      "public": true,
+      "query_collection": null,
+      "query_filter_names": [],
+      "query_parameters": [
+        {
+          "name": "window",
+          "schema": {
+            "enum": [
+              "7d",
+              "30d",
+              "90d",
+              "1y",
+              "all"
+            ],
+            "type": "string"
+          }
+        }
+      ]
+    },
+    {
+      "artifact_path": "/metagraph/subnets/{netuid}/economics/history.json",
+      "cache": "short",
+      "description": "Fetch a subnet's per-day economics history (alpha price, emission share, total stake, registration cost over time), read live from the economics_history D1 rollup tier (snapshotted daily off the live economics tier). The table accrues going forward, so it is sparse until the rollup has run for a while. ?window=7d|30d|90d|1y|all.",
+      "id": "subnet-economics-history",
+      "method": "GET",
+      "path": "/api/v1/subnets/{netuid}/economics/history",
       "public": true,
       "query_collection": null,
       "query_filter_names": [],

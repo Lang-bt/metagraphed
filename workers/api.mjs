@@ -65,6 +65,7 @@ import {
   handleSubnetEvents,
   handleNeuronHistory,
   handleSubnetHistory,
+  handleSubnetEconomicsHistory,
   handleSubnetConcentration,
   handleSubnetConcentrationHistory,
   canonicalSubnetConcentrationHistoryCachePath,
@@ -155,6 +156,7 @@ import {
   neuronDailyUpsertStatements,
   validNeuronDailyRows,
 } from "../src/neuron-history.mjs";
+import { rollupEconomicsHistory } from "../src/economics-history.mjs";
 import {
   eventInsertStatements,
   pruneAccountEvents,
@@ -222,6 +224,7 @@ import {
   RETIRED_CURRENT_HEALTH_ARTIFACT_PATTERN,
   resolveClientIp,
   SUBNET_HISTORY_PATH_PATTERN,
+  SUBNET_ECONOMICS_HISTORY_PATH_PATTERN,
   SUBNET_METAGRAPH_PATH_PATTERN,
   SUBNET_NEURON_HISTORY_PATH_PATTERN,
   SUBNET_NEURON_PATH_PATTERN,
@@ -795,6 +798,14 @@ export async function handleScheduled(controller, env = {}, ctx = {}) {
     const rolled = await rollupNeuronDaily(env).catch(() => ({
       rolled: false,
     }));
+    // Also snapshot the live per-subnet economics tier (#1307) into the dated
+    // economics_history table — one row per subnet for today's UTC date. Read off
+    // the same `economics:current` KV blob the live economics route serves;
+    // .catch-isolated so a cold/absent economics tier never affects the rest of
+    // the rollup. The table accrues going forward only.
+    const economics = await readEconomicsCurrentKv(env)
+      .then((blob) => rollupEconomicsHistory(env, blob, { now }))
+      .catch(() => ({ rolled: false }));
     const archived = await archiveNeuronDaily(env).catch(() => ({
       archived: false,
     }));
@@ -807,7 +818,7 @@ export async function handleScheduled(controller, env = {}, ctx = {}) {
       archived.archived && archivedPrunable.archived
         ? await pruneNeuronDaily(env, { now }).catch(() => ({ pruned: false }))
         : { pruned: false, reason: "archive-not-confirmed" };
-    return { rolled, archived, archivedPrunable, pruned };
+    return { rolled, economics, archived, archivedPrunable, pruned };
   }
   return runHealthProber(env, ctx);
 }
@@ -1195,6 +1206,22 @@ export async function handleRequest(request, env = {}, ctx = {}) {
         ),
       );
     }
+    const economicsHistoryMatch = SUBNET_ECONOMICS_HISTORY_PATH_PATTERN.exec(
+      resolved.url.pathname,
+    );
+    if (economicsHistoryMatch) {
+      // Per-subnet economics time series over the economics_history rollup,
+      // deterministic per daily snapshot — edge-cache like the sibling /history
+      // route (pathname carries the netuid, search carries ?window).
+      return withEdgeCache(request, ctx, env, "subnet-economics-history", () =>
+        handleSubnetEconomicsHistory(
+          request,
+          env,
+          Number(economicsHistoryMatch[1]),
+          resolved.url,
+        ),
+      );
+    }
     const metagraphMatch = SUBNET_METAGRAPH_PATH_PATTERN.exec(
       resolved.url.pathname,
     );
@@ -1425,6 +1452,7 @@ function isMainnetOnlyApiPath(pathname) {
     SUBNET_VALIDATORS_PATH_PATTERN.test(pathname) ||
     SUBNET_EVENTS_PATH_PATTERN.test(pathname) ||
     SUBNET_HISTORY_PATH_PATTERN.test(pathname) ||
+    SUBNET_ECONOMICS_HISTORY_PATH_PATTERN.test(pathname) ||
     ACCOUNT_PATH_PATTERN.test(pathname) ||
     ACCOUNT_EVENTS_PATH_PATTERN.test(pathname) ||
     ACCOUNT_HISTORY_PATH_PATTERN.test(pathname) ||

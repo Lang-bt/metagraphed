@@ -44,6 +44,10 @@ import {
   MAX_HISTORY_POINTS,
 } from "../../src/neuron-history.mjs";
 import {
+  buildEconomicsHistory,
+  ECONOMICS_HISTORY_READ_COLUMNS,
+} from "../../src/economics-history.mjs";
+import {
   ACCOUNT_EVENT_COLUMNS,
   buildAccountTransfers,
   buildAccountHistory,
@@ -225,6 +229,49 @@ export async function handleSubnetHistory(request, env, netuid, url) {
       meta: await metagraphMeta(
         env,
         `/metagraph/subnets/${netuid}/history.json`,
+        null,
+      ),
+    },
+    "short",
+  );
+}
+
+// GET /api/v1/subnets/{netuid}/economics/history?window=7d|30d|90d|1y|all
+// Per-subnet economics over time (alpha price, emission share, total stake,
+// registration cost — one point per snapshot_date, newest first, bounded). Served
+// from the dated economics_history rollup tier (D1, migrations/0024), which the
+// daily neuron-history cron writes off the live `economics:current` KV blob. A
+// cold/absent store → 200 with empty points (never 404), like the sibling
+// /history route; the table accrues going forward so it is sparse until the rollup
+// has run for a while.
+export async function handleSubnetEconomicsHistory(request, env, netuid, url) {
+  const validationError = validateQueryParams(url, ["window"]);
+  if (validationError) return analyticsQueryError(validationError);
+  const { label, days, error } = parseHistoryWindow(
+    url.searchParams.get("window"),
+  );
+  if (error) return analyticsQueryError(error);
+  const params = [netuid];
+  let sql = `SELECT snapshot_date, ${ECONOMICS_HISTORY_READ_COLUMNS} FROM economics_history WHERE netuid = ?`;
+  if (days != null) {
+    // Cutoff computed in JS and bound as a plain YYYY-MM-DD (the PK index covers it).
+    const cutoff = new Date(Date.now() - days * DAY_MS)
+      .toISOString()
+      .slice(0, 10);
+    sql += " AND snapshot_date >= ?";
+    params.push(cutoff);
+  }
+  sql += " ORDER BY snapshot_date DESC LIMIT ?";
+  params.push(MAX_HISTORY_POINTS);
+  const rows = await d1All(env, sql, params);
+  const data = buildEconomicsHistory(rows, netuid, { window: label });
+  return envelopeResponse(
+    request,
+    {
+      data,
+      meta: await metagraphMeta(
+        env,
+        `/metagraph/subnets/${netuid}/economics/history.json`,
         null,
       ),
     },

@@ -961,6 +961,12 @@ export const PUBLIC_ARTIFACTS = [
     "SubnetHistoryArtifact",
   ),
   artifact(
+    "subnet-economics-history",
+    "/metagraph/subnets/{netuid}/economics/history.json",
+    "Per-subnet economics time series (alpha price, emission share, total stake, registration cost over time) for one subnet, served live from the economics_history D1 rollup tier at /api/v1/subnets/{netuid}/economics/history (no static file).",
+    "SubnetEconomicsHistoryArtifact",
+  ),
+  artifact(
     "account-summary",
     "/metagraph/accounts/{ss58}.json",
     "Cross-subnet activity summary for one account (hotkey or coldkey): chain-event aggregates joined to current registrations, served live from D1 at /api/v1/accounts/{ss58} (no static file).",
@@ -1753,6 +1759,22 @@ export const API_ROUTES = [
     "/api/v1/subnets/{netuid}/history",
     "/metagraph/subnets/{netuid}/history.json",
     "Fetch a subnet's per-day aggregate history (neuron/validator counts + stake/emission totals) for sparklines, computed live from the neuron_daily D1 rollup tier. ?window=7d|30d|90d|1y|all.",
+    "short",
+    ["subnets", "analytics"],
+    [
+      {
+        name: "window",
+        schema: { type: "string", enum: ["7d", "30d", "90d", "1y", "all"] },
+      },
+    ],
+    [{ name: "netuid", schema: { type: "integer", minimum: 0 } }],
+  ),
+  route(
+    "subnet-economics-history",
+    "GET",
+    "/api/v1/subnets/{netuid}/economics/history",
+    "/metagraph/subnets/{netuid}/economics/history.json",
+    "Fetch a subnet's per-day economics history (alpha price, emission share, total stake, registration cost over time), read live from the economics_history D1 rollup tier (snapshotted daily off the live economics tier). The table accrues going forward, so it is sparse until the rollup has run for a while. ?window=7d|30d|90d|1y|all.",
     "short",
     ["subnets", "analytics"],
     [

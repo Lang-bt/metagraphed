@@ -1486,6 +1486,33 @@
           }
         }
       },
+      "SubnetEconomicsHistoryArtifact": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Per-subnet economics time series (#1307): alpha price, emission share, total stake and registration cost over time, one point per snapshot_date (newest first). Served live from the economics_history D1 rollup tier at /api/v1/subnets/{netuid}/economics/history (no static file); the table accrues going forward off the daily economics snapshot, so it is sparse until the rollup has run for a while.",
+        "required": ["schema_version", "netuid", "point_count", "points"],
+        "properties": {
+          "schema_version": { "type": "integer" },
+          "netuid": { "type": "integer", "minimum": 0 },
+          "window": { "type": ["string", "null"] },
+          "point_count": { "type": "integer", "minimum": 0 },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["snapshot_date"],
+              "properties": {
+                "snapshot_date": { "type": "string" },
+                "alpha_price_tao": { "type": ["number", "null"] },
+                "emission_share": { "type": ["number", "null"] },
+                "total_stake_tao": { "type": ["number", "null"] },
+                "registration_cost": { "type": ["number", "null"] }
+              }
+            }
+          }
+        }
+      },
       "AccountEvent": {
         "type": "object",
         "additionalProperties": false,

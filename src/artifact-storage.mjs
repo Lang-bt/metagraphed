@@ -45,6 +45,9 @@ export const R2_ONLY_PATTERNS = [
   /^subnets\/(?:\d+|\{netuid\})\/neurons\/(?:\d+|\{uid\})\.json$/,
   /^subnets\/(?:\d+|\{netuid\})\/neurons\/(?:\d+|\{uid\})\/history\.json$/,
   /^subnets\/(?:\d+|\{netuid\})\/history\.json$/,
+  // Per-subnet economics history (#1307): computed live from the economics_history
+  // D1 rollup at /api/v1/subnets/{netuid}/economics/history — never a committed file.
+  /^subnets\/(?:\d+|\{netuid\})\/economics\/history\.json$/,
   /^subnets\/(?:\d+|\{netuid\})\/validators\.json$/,
   // Per-subnet chain-event stream (#1345): account_events filtered by netuid at
   // /api/v1/subnets/{netuid}/events — live D1, never written as a file.
