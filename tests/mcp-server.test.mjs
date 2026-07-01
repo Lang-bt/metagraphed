@@ -4564,6 +4564,56 @@ describe("MCP economics + metagraph data tools", () => {
     assert.equal(out.validator_retention, 1);
   });
 
+  test("get_subnet_yield returns schema-stable empty on cold D1", async () => {
+    const res = await callTool("get_subnet_yield", { netuid: 7 });
+    const out = res.body.result.structuredContent;
+    assert.equal(out.netuid, 7);
+    assert.equal(out.neuron_count, 0);
+    assert.equal(out.subnet_yield, null);
+    assert.deepEqual(out.neurons, []);
+  });
+
+  test("get_subnet_yield ranks UIDs by emission-per-stake return", async () => {
+    const res = await callTool(
+      "get_subnet_yield",
+      { netuid: 7 },
+      {
+        env: {
+          METAGRAPH_HEALTH_DB: metagraphD1({
+            neurons: [
+              {
+                uid: 0,
+                hotkey: "5Hk0",
+                validator_permit: 1,
+                stake_tao: 10,
+                emission_tao: 1,
+                captured_at: 1750000000000,
+                block_number: 5000,
+              },
+              {
+                uid: 1,
+                hotkey: "5Hk1",
+                validator_permit: 0,
+                stake_tao: 10,
+                emission_tao: 3,
+                captured_at: 1750000000000,
+                block_number: 5000,
+              },
+            ],
+          }),
+        },
+      },
+    );
+    const out = res.body.result.structuredContent;
+    assert.equal(out.neuron_count, 2);
+    assert.equal(out.validator_count, 1);
+    assert.equal(out.subnet_yield, 0.2);
+    assert.equal(out.neurons[0].uid, 1);
+    assert.equal(out.neurons[0].yield, 0.3);
+    assert.equal(out.neurons[1].uid, 0);
+    assert.equal(out.neurons[1].yield, 0.1);
+  });
+
   test("the D1-backed tools degrade to schema-stable empty payloads when D1 is cold", async () => {
     const meta = await callTool("get_subnet_metagraph", { netuid: 7 });
     assert.equal(meta.body.result.isError, false);

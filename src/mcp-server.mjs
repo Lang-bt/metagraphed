@@ -110,6 +110,7 @@ import {
   parseHistoryWindow,
 } from "./neuron-history.mjs";
 import { loadSubnetTurnover } from "./turnover.mjs";
+import { loadSubnetYield } from "./subnet-yield.mjs";
 import { isFinneySs58Address, loadAccountBalance } from "./account-balance.mjs";
 import { decodeCursor, encodeCursor } from "./cursor.mjs";
 import { loadBlocks, loadBlock } from "./blocks.mjs";
@@ -215,7 +216,9 @@ export const MCP_INSTRUCTIONS =
   "emission decentralization metrics (Gini, HHI, Nakamoto), " +
   "get_subnet_concentration_history the decentralization trend over time, " +
   "get_subnet_turnover validator-set and registration churn between two " +
-  "boundary snapshots, get_registry_leaderboards the live " +
+  "boundary snapshots, get_subnet_yield per-UID emission-per-stake return " +
+  "rates plus distribution percentiles over the current metagraph snapshot, " +
+  "get_registry_leaderboards the live " +
   "cross-subnet health/economics boards, compare_subnets a side-by-side view " +
   "across structure/economics/health, get_global_incidents recent cross-subnet " +
   "probe failures, get_chain_signers the windowed most-active-account " +
@@ -1761,6 +1764,30 @@ export const MCP_TOOLS = [
         windowLabel: label,
         windowDays: days,
       });
+    },
+  },
+  {
+    name: "get_subnet_yield",
+    title: "Get subnet emission yield distribution",
+    description:
+      "Fetch one subnet's per-UID emission yield (emission_tao over " +
+      "stake_tao) from the current metagraph snapshot: each UID ranked by " +
+      "return rate with stake, emission, role, and an above/below/at-median " +
+      "label, plus subnet aggregate yield and mean/p25/median/p75/p90 " +
+      "percentiles over UIDs with stake. Zero-stake UIDs get null yield and " +
+      "sink to the bottom. Snapshot-based (no time window). Mirrors " +
+      "GET /api/v1/subnets/{netuid}/yield.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        netuid: { type: "integer", description: "Subnet netuid.", minimum: 0 },
+      },
+      required: ["netuid"],
+      additionalProperties: false,
+    },
+    async handler(args, ctx) {
+      const netuid = requireNetuid(args);
+      return loadSubnetYield(mcpD1Runner(ctx), netuid);
     },
   },
   {
@@ -4571,6 +4598,29 @@ const TOOL_OUTPUT_SCHEMAS = {
         emission_nakamoto_coefficient: ANY,
         emission_top_10pct_share: ANY,
       }),
+    },
+  },
+  get_subnet_yield: {
+    type: "object",
+    additionalProperties: true,
+    required: ["netuid", "neuron_count", "neurons"],
+    properties: {
+      schema_version: { type: "integer" },
+      netuid: { type: "integer" },
+      captured_at: NULLABLE_STRING,
+      block_number: NULLABLE_INT,
+      neuron_count: { type: "integer" },
+      validator_count: { type: "integer" },
+      miner_count: { type: "integer" },
+      total_stake_tao: { type: ["number", "null"] },
+      total_emission_tao: { type: ["number", "null"] },
+      subnet_yield: { type: ["number", "null"] },
+      mean_yield: { type: ["number", "null"] },
+      median_yield: { type: ["number", "null"] },
+      p25_yield: { type: ["number", "null"] },
+      p75_yield: { type: ["number", "null"] },
+      p90_yield: { type: ["number", "null"] },
+      neurons: { type: "array", items: { type: "object" } },
     },
   },
   get_subnet_turnover: {

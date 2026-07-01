@@ -368,6 +368,12 @@ assert.ok(
   Array.isArray(vals.validators),
   "list_subnet_validators must return validators[]",
 );
+const yieldCard = await callOk("get_subnet_yield", { netuid: 7 });
+assert.ok(
+  Array.isArray(yieldCard.neurons),
+  "get_subnet_yield must return neurons[]",
+);
+assert.equal(yieldCard.netuid, 7, "get_subnet_yield must echo the netuid");
 const neuron = await callOk("get_neuron", { netuid: 7, uid: 0 });
 assert.ok("neuron" in neuron, "get_neuron must return a neuron field");
 
