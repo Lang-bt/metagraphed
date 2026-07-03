@@ -1632,7 +1632,7 @@ export const API_ROUTES = [
     "Fetch contributor-targeted subnet gap priorities.",
     "standard",
     ["registry", "review"],
-    listQuery("review-gap-priorities"),
+    csvListQuery("review-gap-priorities"),
   ),
   route(
     "subnet-gaps",
@@ -1653,7 +1653,7 @@ export const API_ROUTES = [
     "Fetch profile completeness gaps for contributor targeting.",
     "standard",
     ["registry", "review", "profiles"],
-    listQuery("profile-completeness"),
+    csvListQuery("profile-completeness"),
   ),
   route(
     "review-adapter-candidates",
@@ -1663,7 +1663,7 @@ export const API_ROUTES = [
     "Fetch subnets worth deeper adapter work.",
     "standard",
     ["adapters", "review"],
-    listQuery("adapter-candidates"),
+    csvListQuery("adapter-candidates"),
   ),
   route(
     "review-enrichment-queue",
@@ -1673,7 +1673,7 @@ export const API_ROUTES = [
     "Fetch the prioritized all-subnet enrichment queue.",
     "standard",
     ["registry", "review", "profiles"],
-    listQuery("enrichment-queue"),
+    csvListQuery("enrichment-queue"),
   ),
   route(
     "review-enrichment-evidence",

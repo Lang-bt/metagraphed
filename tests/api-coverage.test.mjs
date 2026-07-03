@@ -1028,6 +1028,89 @@ describe("subnets CSV export", () => {
   });
 });
 
+// --- Review enrichment list CSV export (#2527) --------------------------------
+describe("review enrichment list CSV export", () => {
+  const parseCsv = async (res) => {
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type"), /^text\/csv/);
+    const lines = (await res.text()).split("\r\n");
+    const header = lines[0].split(",");
+    const rows = lines
+      .slice(1)
+      .filter(Boolean)
+      .map((line) => {
+        const values = line.split(",");
+        return Object.fromEntries(
+          header.map((name, index) => [name, values[index]]),
+        );
+      });
+    return { header, rows, lines };
+  };
+
+  test("review/gaps ?format=csv exports priority_score and honors curation_level", async () => {
+    const res = await handleRequest(
+      req(
+        "/api/v1/review/gaps?format=csv&fields=netuid,priority_score,curation_level&sort=priority_score&limit=5&curation_level=candidate-discovered",
+      ),
+      createLocalArtifactEnv(),
+      {},
+    );
+    const { header, rows } = await parseCsv(res);
+    assert.equal(header.join(","), "netuid,priority_score,curation_level");
+    assert.ok(rows.length > 0);
+    assert.ok(
+      rows.every((row) => row.curation_level === "candidate-discovered"),
+    );
+    assert.ok(rows.every((row) => /^\d+$/.test(row.netuid)));
+    assert.ok(rows.every((row) => row.priority_score !== ""));
+  });
+
+  test("review/profile-completeness ?format=csv exports priority_score and honors identity_level", async () => {
+    const res = await handleRequest(
+      req(
+        "/api/v1/review/profile-completeness?format=csv&fields=netuid,priority_score,identity_level&sort=priority_score&limit=5&identity_level=partial",
+      ),
+      createLocalArtifactEnv(),
+      {},
+    );
+    const { header, rows } = await parseCsv(res);
+    assert.equal(header.join(","), "netuid,priority_score,identity_level");
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every((row) => row.identity_level === "partial"));
+    assert.ok(rows.every((row) => row.priority_score !== ""));
+  });
+
+  test("review/adapter-candidates ?format=csv exports priority_score and honors operational_kinds", async () => {
+    const res = await handleRequest(
+      req(
+        "/api/v1/review/adapter-candidates?format=csv&fields=netuid,priority_score,operational_kinds&sort=priority_score&limit=5&operational_kinds=openapi",
+      ),
+      createLocalArtifactEnv(),
+      {},
+    );
+    const { header, rows } = await parseCsv(res);
+    assert.equal(header.join(","), "netuid,priority_score,operational_kinds");
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every((row) => row.operational_kinds.includes("openapi")));
+    assert.ok(rows.every((row) => row.priority_score !== ""));
+  });
+
+  test("review/enrichment-queue ?format=csv exports priority_score and honors lane", async () => {
+    const res = await handleRequest(
+      req(
+        "/api/v1/review/enrichment-queue?format=csv&fields=netuid,priority_score,lane&sort=priority_score&limit=5&lane=direct-submission",
+      ),
+      createLocalArtifactEnv(),
+      {},
+    );
+    const { header, rows } = await parseCsv(res);
+    assert.equal(header.join(","), "netuid,priority_score,lane");
+    assert.ok(rows.length > 0);
+    assert.ok(rows.every((row) => row.lane === "direct-submission"));
+    assert.ok(rows.every((row) => row.priority_score !== ""));
+  });
+});
+
 // --- RFC 8288 pagination Link header (#1686) ----------------------------------
 // /api/v1/subnets is the only end-to-end list fixture; the header is built once
 // for every cursor-paginated collection in workers/list-query.mjs, so proving it
