@@ -1,0 +1,50 @@
+{
+  "categories": [],
+  "curation": {
+    "level": "community-seeded",
+    "review_state": "unreviewed"
+  },
+  "name": "Affine",
+  "netuid": 120,
+  "schema_version": 1,
+  "slug": "sn-120",
+  "status": "active",
+  "surfaces": [
+    {
+      "auth_required": false,
+      "authority": "community",
+      "id": "sn-120-affine-openapi",
+      "kind": "openapi",
+      "name": "Affine API OpenAPI schema",
+      "provider": "affine",
+      "public_safe": true,
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "lang-bt"
+      },
+      "schema_status": "machine-readable",
+      "schema_url": "https://api.affine.io/openapi.json",
+      "source_urls": [
+        "https://github.com/AffineFoundation/affine-cortex",
+        "https://www.affine.io/"
+      ],
+      "url": "https://api.affine.io/openapi.json"
+    },
+    {
+      "auth_required": false,
+      "authority": "community",
+      "id": "sn-120-affine-subnet-api",
+      "kind": "subnet-api",
+      "name": "Affine API health",
+      "notes": "Public no-auth GET /api/v1/health documented by the Affine OpenAPI schema.",
+      "provider": "affine",
+      "public_safe": true,
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "lang-bt"
+      },
+      "source_urls": ["https://api.affine.io/openapi.json"],
+      "url": "https://api.affine.io/api/v1/health"
+    }
+  ]
+}
