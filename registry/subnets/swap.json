@@ -152,6 +152,25 @@
         "submitted_by": "glorydavid03023"
       },
       "notes": "Public unauthenticated TaoFi (SN10 Swap) API — the servers host declared in the TaoFi OpenAPI schema. POST endpoints return live swap/bridge quotes and transaction call data (verified: getBuyQuote returned an HTTP 200 JSON quote). Documented at taofi-doc.web.app."
+    },
+    {
+      "id": "sn-10-swap-nfpm-abi",
+      "name": "Swap NonfungiblePositionManager contract ABI",
+      "kind": "data-artifact",
+      "url": "https://raw.githubusercontent.com/Swap-Subnet/swap-subnet/main/swap/abi/NonfungiblePositionManager.json",
+      "provider": "taofi",
+      "auth_required": false,
+      "authority": "community",
+      "public_safe": true,
+      "source_urls": [
+        "https://github.com/Swap-Subnet/swap-subnet/blob/main/swap/abi/NonfungiblePositionManager.json",
+        "https://github.com/Swap-Subnet/swap-subnet"
+      ],
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "galuis116"
+      },
+      "notes": "Public no-auth Uniswap-V3-style NonfungiblePositionManager contract ABI (46 entries) published in the official Swap-Subnet/swap-subnet repository at swap/abi/NonfungiblePositionManager.json. Used by SN10 Swap's on-chain liquidity-position logic; the same repo is already this file's registered source_repo."
     }
   ]
 }
