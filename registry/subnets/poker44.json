@@ -51,6 +51,44 @@
         "https://api.poker44.net/api/v1/benchmark"
       ],
       "url": "https://api.poker44.net/api/v1/benchmark"
+    },
+    {
+      "auth_required": false,
+      "authority": "community",
+      "id": "sn-126-poker44-training-benchmark-docs",
+      "kind": "docs",
+      "name": "Poker44 training benchmark docs",
+      "notes": "Official SN126 Poker44 public benchmark guide covering the api.poker44.net benchmark endpoints, release metadata fields, and chunk fetch workflow for miner parser and model regression testing.",
+      "provider": "poker44",
+      "public_safe": true,
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "Lang-bt"
+      },
+      "source_urls": [
+        "https://github.com/Poker44/Poker44-subnet/blob/main/docs/training-benchmark.md",
+        "https://github.com/Poker44/Poker44-subnet"
+      ],
+      "url": "https://github.com/Poker44/Poker44-subnet/blob/main/docs/training-benchmark.md"
+    },
+    {
+      "auth_required": false,
+      "authority": "community",
+      "id": "sn-126-poker44-benchmark-releases-api",
+      "kind": "subnet-api",
+      "name": "Poker44 benchmark releases API",
+      "notes": "Public no-auth GET /api/v1/benchmark/releases on api.poker44.net returning the published shadow-training benchmark release catalog (releaseVersion, schemaVersion, per-date chunk/hand counts). Documented alongside GET /api/v1/benchmark in the official Poker44-subnet training-benchmark guide; distinct from the aggregate status endpoint already listed as a data-artifact.",
+      "provider": "poker44",
+      "public_safe": true,
+      "review": {
+        "state": "community-submitted",
+        "submitted_by": "Lang-bt"
+      },
+      "source_urls": [
+        "https://github.com/Poker44/Poker44-subnet/blob/main/docs/training-benchmark.md",
+        "https://api.poker44.net/api/v1/benchmark/releases"
+      ],
+      "url": "https://api.poker44.net/api/v1/benchmark/releases"
     }
   ],
   "website_url": "https://poker44.net/"
