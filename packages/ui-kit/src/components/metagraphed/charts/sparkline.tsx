@@ -1,6 +1,7 @@
 import {
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
@@ -104,6 +105,22 @@ export function Sparkline({
     setHover(idx);
   }
 
+  function onKeyDown(e: ReactKeyboardEvent<HTMLDivElement>) {
+    if (!canTooltip) return;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setHover((prev) => Math.min(pts.length - 1, (prev ?? -1) + 1));
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setHover((prev) => Math.max(0, (prev ?? pts.length) - 1));
+    }
+  }
+
+  function onFocus() {
+    if (!canTooltip) return;
+    setHover((prev) => prev ?? 0);
+  }
+
   const hoverPoint = hover != null ? coords[hover] : null;
   const hoverValue = hover != null ? pts[hover] : null;
   const hoverLabel = hover != null ? points?.[hover]?.t : undefined;
@@ -119,6 +136,15 @@ export function Sparkline({
       style={{ width: "100%", maxWidth: width, height }}
       onPointerMove={onMove}
       onPointerLeave={() => setHover(null)}
+      onKeyDown={onKeyDown}
+      onFocus={onFocus}
+      onBlur={() => setHover(null)}
+      tabIndex={canTooltip ? 0 : undefined}
+      aria-label={
+        canTooltip
+          ? `${ariaLabel ?? "Sparkline chart"}, use arrow keys to step through values`
+          : undefined
+      }
     >
       <svg
         width="100%"
@@ -170,6 +196,9 @@ export function Sparkline({
           {tooltipText}
         </div>
       ) : null}
+      <span aria-live="polite" className="sr-only">
+        {tooltipText}
+      </span>
     </div>
   );
 }

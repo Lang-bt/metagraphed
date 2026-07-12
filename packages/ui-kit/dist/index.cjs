@@ -3190,6 +3190,20 @@ function Sparkline({
     const idx = Math.round(x / rect.width * (pts.length - 1));
     setHover(idx);
   }
+  function onKeyDown(e) {
+    if (!canTooltip) return;
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      setHover((prev) => Math.min(pts.length - 1, (prev ?? -1) + 1));
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      setHover((prev) => Math.max(0, (prev ?? pts.length) - 1));
+    }
+  }
+  function onFocus() {
+    if (!canTooltip) return;
+    setHover((prev) => prev ?? 0);
+  }
   const hoverPoint = hover != null ? coords[hover] : null;
   const hoverValue = hover != null ? pts[hover] : null;
   const hoverLabel = hover != null ? points?.[hover]?.t : void 0;
@@ -3202,6 +3216,11 @@ function Sparkline({
       style: { width: "100%", maxWidth: width, height },
       onPointerMove: onMove,
       onPointerLeave: () => setHover(null),
+      onKeyDown,
+      onFocus,
+      onBlur: () => setHover(null),
+      tabIndex: canTooltip ? 0 : void 0,
+      "aria-label": canTooltip ? `${ariaLabel ?? "Sparkline chart"}, use arrow keys to step through values` : void 0,
       children: [
         /* @__PURE__ */ jsxRuntime.jsxs(
           "svg",
@@ -3263,7 +3282,8 @@ function Sparkline({
             role: "tooltip",
             children: tooltipText
           }
-        ) : null
+        ) : null,
+        /* @__PURE__ */ jsxRuntime.jsx("span", { "aria-live": "polite", className: "sr-only", children: tooltipText })
       ]
     }
   );
