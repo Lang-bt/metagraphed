@@ -11,9 +11,9 @@
     "official-source-repo",
     "official-website"
   ],
-  "website_url": "https://bitads.ai/",
-  "docs_url": "https://bitads.ai/docs",
-  "source_repo": "https://github.com/FirstTensorLabs/BitAds",
+  "website_url": null,
+  "docs_url": null,
+  "source_repo": "https://github.com/study-service/BitAds.ai",
   "dashboard_url": "https://taomarketcap.com/subnets/16",
   "baseline_excluded_surface_ids": [
     "sn-16-taomarketcap-source-repo",
@@ -25,7 +25,7 @@
     "sn-16-website-common-swagger",
     "sn-16-website-common-swagger-json"
   ],
-  "notes": "Reviewed overlay for SN16 BitAds using the official BitAds website, docs page, and source repository. Common API/OpenAPI/Swagger paths currently return website HTML instead of machine-readable API/schema responses, so they are excluded as content mismatches.",
+  "notes": "Reviewed overlay for SN16 BitAds. Top-level source_repo now points at the live study-service/BitAds.ai successor (the older FirstTensorLabs/BitAds URL returns 404). The bitads.ai website/docs domain no longer resolves (DNS dead), so website_url and docs_url are nulled. Common API/OpenAPI/Swagger paths previously returned website HTML instead of machine-readable API/schema responses and remain excluded as content mismatches.",
   "curation": {
     "level": "maintainer-reviewed",
     "review_state": "maintainer-reviewed",
@@ -33,12 +33,13 @@
     "verified_at": "2026-06-08T20:25:00.000Z",
     "source_count": 5,
     "gap_notes": [
-      "Official website, docs page, and source repository are verified live.",
-      "Common API, health, OpenAPI, Swagger JSON, and Swagger UI paths return marketing-site HTML rather than API/schema payloads.",
+      "Live source repository is study-service/BitAds.ai; FirstTensorLabs/BitAds returns 404.",
+      "bitads.ai website and docs domain currently do not resolve (DNS dead); website_url and docs_url nulled.",
+      "Official website and docs surfaces that pointed at bitads.ai reflect the same DNS-dead status; probes disabled.",
+      "Common API, health, OpenAPI, Swagger JSON, and Swagger UI paths previously returned marketing-site HTML rather than API/schema payloads.",
       "No verified safe public subnet API endpoint yet.",
       "No verified machine-readable OpenAPI/Swagger schema yet.",
-      "No verified SSE/event stream yet.",
-      "No verified standalone static data artifact yet."
+      "No verified SSE/event stream yet."
     ]
   },
   "surfaces": [
@@ -56,12 +57,12 @@
         "https://github.com/FirstTensorLabs/BitAds"
       ],
       "probe": {
-        "enabled": true,
+        "enabled": false,
         "method": "HEAD",
         "expect": "html",
         "timeout_ms": 10000
       },
-      "notes": "Official BitAds website."
+      "notes": "Previously the official BitAds website at bitads.ai; the domain no longer resolves (DNS dead). Top-level website_url has been nulled; probe disabled pending a live replacement."
     },
     {
       "id": "sn-16-bitads-docs",
@@ -74,30 +75,30 @@
       "public_safe": true,
       "source_urls": ["https://bitads.ai/docs"],
       "probe": {
-        "enabled": true,
+        "enabled": false,
         "method": "HEAD",
         "expect": "html",
         "timeout_ms": 10000
       },
-      "notes": "Official BitAds documentation page."
+      "notes": "Previously the official BitAds docs at bitads.ai/docs; the domain no longer resolves (DNS dead). Top-level docs_url has been nulled; probe disabled pending a live replacement."
     },
     {
       "id": "sn-16-bitads-source",
       "name": "BitAds source repository",
       "kind": "source-repo",
-      "url": "https://github.com/FirstTensorLabs/BitAds",
+      "url": "https://github.com/study-service/BitAds.ai",
       "provider": "bitads",
       "auth_required": false,
       "authority": "official",
       "public_safe": true,
-      "source_urls": ["https://github.com/FirstTensorLabs/BitAds"],
+      "source_urls": ["https://github.com/study-service/BitAds.ai"],
       "probe": {
         "enabled": true,
         "method": "HEAD",
         "expect": "any",
         "timeout_ms": 10000
       },
-      "notes": "Official BitAds source repository."
+      "notes": "Live BitAds source repository at study-service/BitAds.ai (replaces the dead FirstTensorLabs/BitAds URL)."
     },
     {
       "auth_required": false,
@@ -105,7 +106,7 @@
       "id": "sn-16-bitads-min-compute",
       "kind": "data-artifact",
       "name": "BitAds minimum compute requirements",
-      "notes": "Public no-auth machine-readable min_compute.yml specifying the minimum and recommended hardware (CPU/RAM/storage/OS and network bandwidth) to run an SN16 BitAds miner or validator, published in the official BitAds source repository study-service/BitAds.ai — whose README states 'netuid 16' and whose GitHub homepage is the registered bitads.ai website. A standalone machine-readable reference artifact the registry did not yet capture (the manifest's source_repo field points at the operator's older FirstTensorLabs/BitAds repo; the live code now lives at study-service/BitAds.ai).",
+      "notes": "Public no-auth machine-readable min_compute.yml specifying the minimum and recommended hardware (CPU/RAM/storage/OS and network bandwidth) to run an SN16 BitAds miner or validator, published in the live BitAds source repository study-service/BitAds.ai — whose README states 'netuid 16'. A standalone machine-readable reference artifact.",
       "provider": "bitads",
       "public_safe": true,
       "review": {
