@@ -14,6 +14,12 @@ import { shortHash } from "@/lib/metagraphed/blocks";
 import { ValidatorSubnetHeatmap } from "@/components/metagraphed/charts/validator-subnet-heatmap";
 import { taoCompact, FeaturedBadge } from "@/components/metagraphed/neuron-table";
 import { ValidatorGuide } from "@/components/metagraphed/validator-guide";
+import { ValidatorIdentityChip } from "@/components/metagraphed/validator-identity-chip";
+import {
+  annualizedDelegatorApyPct,
+  formatApyPct,
+  formatTakePct,
+} from "@/lib/metagraphed/validator-apy";
 import type { GlobalValidatorSort } from "@/lib/metagraphed/types";
 
 // The full GlobalValidatorSort set the /api/v1/validators endpoint accepts.
@@ -163,8 +169,11 @@ function ValidatorsTable({
           <table className="w-full text-left text-sm">
             <thead className="bg-surface/50">
               <tr>
+                <th className={TH}>Operator</th>
                 <th className={TH}>Hotkey</th>
                 <th className={TH}>Coldkey</th>
+                <th className={`${TH} text-right`}>Take</th>
+                <th className={`${TH} text-right`}>Est. APY</th>
                 <th className={`${TH} text-right`}>Active subnets</th>
                 <th className={`${TH} text-right`}>UIDs</th>
                 <th className={`${TH} text-right`}>Nominators</th>
